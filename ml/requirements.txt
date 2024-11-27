@@ -1,28 +1,38 @@
 # Core ML dependencies
-numpy==1.21.6
-pandas==1.5.3
-scikit-learn==1.1.1
-torch==2.1.0
-onnx==1.13.1
-onnxruntime==1.15.1
-skl2onnx==1.13.0
+numpy
+
+pandas
+scikit-learn
+torch
+onnx
+
+onnxruntime
+
+skl2onnx
+
 
 # Reddit scraping
-praw==7.7.1
-requests==2.31.0
-tqdm==4.66.1
+praw
+requests
+
+tqdm
+
 
 # Image processing
-Pillow==10.0.1
-pytesseract==0.3.10
+Pillow
+
+pytesseract
+
 
 # Text processing
-textblob==0.17.1
-emoji==2.8.0
-nltk==3.8.1
+textblob
+
+emoji
+nltk
 
 # Development tools
-jupyter==1.0.0
-notebook==7.0.6
-black==23.9.1
-flake8==6.1.0
+jupyter
+notebook
+black
+
+flake8

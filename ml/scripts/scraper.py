@@ -8,19 +8,17 @@ import time
 from tqdm import tqdm
 import os
 from concurrent.futures import ThreadPoolExecutor
+from dotenv import load_dotenv
 
 class LinkedInPostScraper:
     def __init__(self):
-        # Initialize Reddit API client
         self.reddit = praw.Reddit(
             client_id="hUmD_ce2Qde-k1eM9NZi0g",
             client_secret="75uOrEH4papSqxhkbvODLcrrOEXPEA",
             user_agent="Exciting_Bedroom6074"
         )
         
-        # Create directories for data
         os.makedirs('data/images', exist_ok=True)
-        os.makedirs('data/text', exist_ok=True)
 
     def download_image(self, url, post_id):
         """Download image from URL and save locally"""
@@ -61,11 +59,9 @@ class LinkedInPostScraper:
         if not text:
             return ""
             
-        # Remove common OCR artifacts
         text = text.replace('|', 'I')
         text = ' '.join(text.split())
         
-        # Remove common LinkedIn UI elements
         ui_elements = [
             "Like", "Comment", "Share", "Reply",
             "• 1st", "• 2nd", "• 3rd",
@@ -78,23 +74,21 @@ class LinkedInPostScraper:
             
         return text.strip()
 
-    def scrape_posts(self, limit=10):
+    def scrape_posts(self, limit=10000):
         """Scrape posts from r/LinkedInLunatics"""
         posts_data = []
         subreddit = self.reddit.subreddit('LinkedInLunatics')
-        print(subreddit)
         
         print(f"Scraping {limit} posts from r/LinkedInLunatics...")
         
+        count = 0
         for post in tqdm(subreddit.hot(limit=limit)):
-            # Check if post has an image
             if hasattr(post, 'url') and any(post.url.endswith(ext) for ext in ['.jpg', '.jpeg', '.png']):
-                # Download image
                 image_path = self.download_image(post.url, post.id)
                 if image_path:
-                    # Extract text
                     text = self.extract_text_from_image(image_path)
-                    if text and len(text) > 50:  # Ensure we have meaningful text
+                    if text and len(text) > 50:
+                        print(post.id, count)
                         posts_data.append({
                             'post_id': post.id,
                             'title': post.title,
@@ -104,15 +98,9 @@ class LinkedInPostScraper:
                             'num_comments': post.num_comments,
                             'upvote_ratio': post.upvote_ratio
                         })
-                        
-                        # Save text to file
-                        with open(f'data/text/{post.id}.txt', 'w', encoding='utf-8') as f:
-                            f.write(text)
-                
-                # Reddit API rate limiting
+                        count += 1
                 time.sleep(2)
 
-        # Save to DataFrame
         df = pd.DataFrame(posts_data)
         df.to_csv('data/linkedin_posts.csv', index=False)
         print(f"Scraped {len(posts_data)} posts successfully!")
@@ -120,13 +108,10 @@ class LinkedInPostScraper:
 
     def calculate_cringe_score(self, row):
         """Calculate initial cringe score based on Reddit metrics"""
-        # Higher scores for more upvoted and commented posts
         base_score = min((row['score'] / 100) * 20 + (row['num_comments'] / 10) * 20, 100)
         
-        # Adjust based on upvote ratio (controversial posts might be cringier)
         ratio_factor = (1 - row['upvote_ratio']) * 20
-        
-        # Final score
+
         cringe_score = min(base_score + ratio_factor, 100)
         return round(cringe_score, 2)
 
@@ -134,10 +119,8 @@ class LinkedInPostScraper:
         """Prepare final dataset for training"""
         df = pd.read_csv('data/linkedin_posts.csv')
         
-        # Calculate cringe scores
         df['cringe_score'] = df.apply(self.calculate_cringe_score, axis=1)
         
-        # Save training data
         df.to_csv('data/training_data.csv', index=False)
         print(f"Prepared training data with {len(df)} samples!")
         
@@ -147,7 +130,7 @@ def main():
     scraper = LinkedInPostScraper()
     
     # Scrape posts
-    df = scraper.scrape_posts(limit=1000)
+    df = scraper.scrape_posts(limit=10000)
     print(df)
     
     # Prepare training data
