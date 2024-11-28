@@ -1,32 +1,28 @@
 # Core ML dependencies
 numpy
-
+spacy
 pandas
 scikit-learn
 torch
 onnx
-
 onnxruntime
-
 skl2onnx
 
 
 # Reddit scraping
 praw
 requests
-
 tqdm
 
 
 # Image processing
 Pillow
-
 pytesseract
 
 
 # Text processing
 textblob
-
+bs4
 emoji
 nltk
 
@@ -34,5 +30,4 @@ nltk
 jupyter
 notebook
 black
-
 flake8
